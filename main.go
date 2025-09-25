@@ -31,7 +31,6 @@ func logRequest(next http.HandlerFunc) http.HandlerFunc {
 
 func createUser(w http.ResponseWriter, r *http.Request) {
 	payload := Payload{}
-	defer r.Body.Close()
 
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {

@@ -27,7 +27,6 @@ func getShoppingList(w http.ResponseWriter, _ *http.Request) {
 
 func createShoppingList(w http.ResponseWriter, r *http.Request) {
 	list := ShoppingList{}
-	defer r.Body.Close()
 
 	err := json.NewDecoder(r.Body).Decode(&list)
 	if err != nil {
