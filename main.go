@@ -22,6 +22,13 @@ func randNum(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func logRequest(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("Received request: %s %s\n", r.Method, r.URL.Path)
+		next(w, r)
+	}
+}
+
 func createUser(w http.ResponseWriter, r *http.Request) {
 	payload := Payload{}
 	defer r.Body.Close()
@@ -85,8 +92,8 @@ func main() {
 	})
 
 	http.HandleFunc("/random", randNum)
-
-	http.HandleFunc("/users", handleUsers) // create a new user
+	http.HandleFunc("/users", logRequest(handleUsers)) // create a new user
+	http.HandleFunc("/lists", logRequest(handleList))  // create a new user
 
 	err := http.ListenAndServe("localhost:8080", nil)
 	if err != nil {
