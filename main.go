@@ -12,31 +12,70 @@ type Payload struct {
 	Password string `json:"password"`
 }
 
+type User struct {
+	Username string `json:"username"`
+}
+
 func randNum(w http.ResponseWriter, r *http.Request) {
 	num := rand.Intn(50)
 	fmt.Fprint(w, num)
 
 }
 
-func handleUser(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		fmt.Fprintln(w, "Create a new user")
-		payload := Payload{}
-		err := json.NewDecoder(r.Body).Decode(&payload)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		// Example: respond with the parsed values
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
-			"user":     payload.Username,
-			"password": payload.Password,
-		})
+func createUser(w http.ResponseWriter, r *http.Request) {
+	payload := Payload{}
+	defer r.Body.Close()
+
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	user := User{Username: payload.Username}
+
+	// Encode to buffer first to catch encoding errors before writing headers
+	jsonData, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonData)
+}
+
+func getUsers(w http.ResponseWriter, _ *http.Request) {
+	users := []User{
+		{Username: "user1"},
+		{Username: "user2"},
+		{Username: "user3"},
+	}
+
+	// Encode to buffer first to catch encoding errors before writing headers
+	jsonData, err := json.Marshal(users)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		fmt.Println("encode error:", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonData)
+}
+
+func handleUsers(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		createUser(w, r)
+	case http.MethodGet:
+		getUsers(w, r)
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+	}
 
 }
 
@@ -47,7 +86,7 @@ func main() {
 
 	http.HandleFunc("/random", randNum)
 
-	http.HandleFunc("/users", handleUser)
+	http.HandleFunc("/users", handleUsers) // create a new user
 
 	err := http.ListenAndServe("localhost:8080", nil)
 	if err != nil {
