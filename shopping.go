@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 )
 
 type ShoppingList struct {
@@ -48,12 +50,33 @@ func createShoppingList(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+func handleDeleteList(w http.ResponseWriter, r *http.Request) {
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	for i, list := range shoppingLists {
+		fmt.Println("list.ID", list.ID)
+		if list.ID == id {
+			shoppingLists = append(shoppingLists[:i], shoppingLists[i+1:]...)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNotFound)
+}
+
 func handleList(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		getShoppingList(w, r)
 	case http.MethodPost:
 		createShoppingList(w, r)
+	case http.MethodDelete:
+		handleDeleteList(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

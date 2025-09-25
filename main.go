@@ -91,8 +91,9 @@ func main() {
 	})
 
 	http.HandleFunc("/random", randNum)
-	http.HandleFunc("/users", logRequest(handleUsers)) // create a new user
-	http.HandleFunc("/lists", logRequest(handleList))  // create a new user
+	http.HandleFunc("/users", logRequest(handleUsers))                  // create a new user
+	http.HandleFunc("/lists", logRequest(handleList))                   // create a new user
+	http.HandleFunc("DELETE /lists/{id}", logRequest(handleDeleteList)) // create a new user
 
 	err := http.ListenAndServe("localhost:8080", nil)
 	if err != nil {
