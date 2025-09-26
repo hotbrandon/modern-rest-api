@@ -125,3 +125,17 @@ func HandleGetUsers(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonData)
 }
+
+func GetSession(token string) (Session, bool) {
+	session, ok := sessions[token]
+	return session, ok
+}
+
+func GetUser(userName string) *User {
+	for _, user := range users {
+		if user.Username == userName {
+			return &user
+		}
+	}
+	return nil
+}
