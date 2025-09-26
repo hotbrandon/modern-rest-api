@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"hotbrandon/modern-rest-api/internal/repository"
 	"hotbrandon/modern-rest-api/internal/util"
 	"log"
 	"net/http"
@@ -22,6 +23,15 @@ type Session struct {
 }
 
 var sessions map[string]Session = make(map[string]Session)
+
+type Handler struct {
+	repo *repository.Repository
+}
+
+func NewHandler(repo *repository.Repository) *Handler {
+	return &Handler{repo: repo}
+
+}
 
 type CreateUserRequest struct {
 	Username string `json:"username"`
