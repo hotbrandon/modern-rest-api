@@ -26,6 +26,7 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 		_, err := util.VerifyToken(token[7:])
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
 		}
 
 		session, ok := handler.GetSession(token[7:])
