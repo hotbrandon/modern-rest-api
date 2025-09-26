@@ -21,7 +21,7 @@ type Session struct {
 	Expire   time.Time
 }
 
-var sessions []Session = []Session{}
+var sessions map[string]Session = make(map[string]Session)
 
 type CreateUserRequest struct {
 	Username string `json:"username"`
@@ -71,8 +71,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 				Username: user.Username,
 				Expire:   time.Now().Add(time.Hour * 24),
 			}
-			sessions = append(sessions, session)
-
+			sessions[token] = session
+			log.Printf("Sessions: %v\n", sessions)
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(jsonData)
 			return
