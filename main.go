@@ -18,7 +18,7 @@ func setupRoutes() {
 		fmt.Fprint(w, "alive!")
 	})
 
-	http.HandleFunc("POST /api/v1/auth/login", handler.HandleLogin)
+	http.HandleFunc("POST /api/v1/auth/login", logRequest(handler.HandleLogin))
 	// create a new user
 	http.HandleFunc("POST /api/v1/users", logRequest(handler.HandleCreateUser))
 	// get all users

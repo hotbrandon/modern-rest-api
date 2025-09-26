@@ -6,11 +6,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GeterateJwtToken(userId string) (string, error) {
+func GeterateJwtToken(userName string) (string, error) {
 	// Create a new token object, specifying signing method and the claims
 	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": userId,
+		"sub": userName,
 		"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
