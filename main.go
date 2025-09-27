@@ -6,6 +6,7 @@ import (
 	"hotbrandon/modern-rest-api/internal/handler"
 	"hotbrandon/modern-rest-api/internal/middleware"
 	"hotbrandon/modern-rest-api/internal/repository"
+	"hotbrandon/modern-rest-api/internal/service"
 	"log"
 	"net/http"
 	"time"
@@ -13,14 +14,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func setupRoutes(_ *handler.Handler) {
-	http.HandleFunc("/health", middleware.RequireAuth(checkHealth))
+func setupRoutes(authHandler *handler.AuthHandler) {
+	http.HandleFunc("/health", checkHealth)
 
-	http.HandleFunc("POST /api/v1/auth/login", middleware.LogRequest(handler.HandleLogin))
+	http.HandleFunc("POST /api/v1/auth/login", middleware.LogRequest(authHandler.HandleLogin))
 	// create a new user
-	http.HandleFunc("POST /api/v1/users", middleware.LogRequest(handler.HandleCreateUser))
+	http.HandleFunc("POST /api/v1/users", middleware.RequireAuth(middleware.LogRequest(authHandler.HandleCreateUser)))
 	// get all users
-	http.HandleFunc("GET /api/v1/users", middleware.LogRequest(handler.HandleGetUsers))
+	http.HandleFunc("GET /api/v1/users", middleware.RequireAuth(middleware.LogRequest(authHandler.HandleGetUsers)))
 
 }
 
@@ -36,26 +37,28 @@ func main() {
 	defer db.Close()
 
 	// Configure pool settings
-	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(25)
-	db.SetConnMaxLifetime(60 * time.Minute)
+	db.SetMaxOpenConns(5)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(1 * time.Hour)
 
 	if err := db.Ping(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	repo := repository.NewRepository(db)
 	if err := repo.Init(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
-	handler := handler.NewHandler(repo)
+	authService := service.NewAuthService(repo)
+	authHandler := handler.NewAuthHandler(authService)
 
-	setupRoutes(handler)
+	setupRoutes(authHandler)
 
 	err = http.ListenAndServe("localhost:8080", nil)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 }

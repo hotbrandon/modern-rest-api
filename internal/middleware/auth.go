@@ -2,11 +2,9 @@ package middleware
 
 import (
 	"fmt"
-	"hotbrandon/modern-rest-api/internal/handler"
 	"hotbrandon/modern-rest-api/internal/util"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func LogRequest(next http.HandlerFunc) http.HandlerFunc {
@@ -29,21 +27,21 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		session, ok := handler.GetSession(token[7:])
-		if !ok {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+		// session, ok := handler.GetSession(token[7:])
+		// if !ok {
+		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// 	return
+		// }
 
-		if session.Expire.Before(time.Now()) {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-		user := handler.GetUser(session.Username)
-		if user == nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+		// if session.Expire.Before(time.Now()) {
+		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// 	return
+		// }
+		// user := handler.GetUser(session.Username)
+		// if user == nil {
+		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// 	return
+		// }
 		next(w, r)
 	}
 }
