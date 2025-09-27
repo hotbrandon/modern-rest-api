@@ -87,15 +87,15 @@ func (r *Repository) GetUserByName(username string) (int, error) {
 	return count, nil
 }
 
-func (r *Repository) ValidateUser(username, password string) (bool, error) {
-	sql := `SELECT username FROM users WHERE username = ? AND password = ?`
+func (r *Repository) ValidateUser(username, password string) (*model.User, error) {
+	sql := `SELECT role, username FROM users WHERE username = ? AND password = ?`
 	row := r.db.QueryRow(sql, username, password)
 	user := model.User{}
-	err := row.Scan(&user.Username)
+	err := row.Scan(&user.Role, &user.Username)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	return &user, nil
 }
 
 func (r *Repository) CreateSession(token string, expires time.Time, username string) error {

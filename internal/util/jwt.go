@@ -1,17 +1,19 @@
 package util
 
 import (
+	"hotbrandon/modern-rest-api/internal/model"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GeterateJwtToken(userName string) (string, error) {
+func GeterateJwtToken(user *model.User) (string, error) {
 	// Create a new token object, specifying signing method and the claims
 	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": userName,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"sub":  user.Username,
+		"role": user.Role,
+		"exp":  time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	secret := []byte("hmacSampleSecret")

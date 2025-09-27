@@ -27,12 +27,12 @@ func (s *AuthService) GetUsers() ([]models.User, error) {
 }
 
 func (s *AuthService) Login(username, password string) (string, error) {
-	_, err := s.repo.ValidateUser(username, password)
+	user, err := s.repo.ValidateUser(username, password)
 	if err != nil {
 		return "", err
 	}
 
-	token, err := util.GeterateJwtToken(username)
+	token, err := util.GeterateJwtToken(user)
 	if err != nil {
 		return "", err
 	}

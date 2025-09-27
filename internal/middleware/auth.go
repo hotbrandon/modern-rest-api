@@ -1,11 +1,18 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"hotbrandon/modern-rest-api/internal/util"
 	"net/http"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
 )
+
+type claimsKey string
+
+const ClaimsKey claimsKey = "claims"
 
 func LogRequest(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -21,27 +28,26 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		_, err := util.VerifyToken(token[7:])
+		claims, err := util.VerifyToken(token[7:])
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		// session, ok := handler.GetSession(token[7:])
-		// if !ok {
-		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		// 	return
-		// }
+		ctx := context.WithValue(r.Context(), ClaimsKey, claims)
+		r = r.WithContext(ctx)
 
-		// if session.Expire.Before(time.Now()) {
-		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		// 	return
-		// }
-		// user := handler.GetUser(session.Username)
-		// if user == nil {
-		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		// 	return
-		// }
 		next(w, r)
 	}
+}
+
+func RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
+	return RequireAuth(func(w http.ResponseWriter, r *http.Request) {
+		claims := r.Context().Value(ClaimsKey).(*jwt.MapClaims)
+		if (*claims)["role"] != "admin" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next(w, r)
+	})
 }

@@ -19,9 +19,9 @@ func setupRoutes(authHandler *handler.AuthHandler) {
 
 	http.HandleFunc("POST /api/v1/auth/login", middleware.LogRequest(authHandler.HandleLogin))
 	// create a new user
-	http.HandleFunc("POST /api/v1/users", middleware.RequireAuth(middleware.LogRequest(authHandler.HandleCreateUser)))
+	http.HandleFunc("POST /api/v1/users", middleware.RequireAdmin(middleware.LogRequest(authHandler.HandleCreateUser)))
 	// get all users
-	http.HandleFunc("GET /api/v1/users", middleware.RequireAuth(middleware.LogRequest(authHandler.HandleGetUsers)))
+	http.HandleFunc("GET /api/v1/users", middleware.RequireAdmin(middleware.LogRequest(authHandler.HandleGetUsers)))
 
 }
 
